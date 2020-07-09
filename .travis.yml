@@ -1,26 +1,30 @@
 language: php
-services:
-  - docker
 
-env:
-  - PHP_VERSION=4.4
-  - PHP_VERSION=5.0
-  - PHP_VERSION=5.1
-  - PHP_VERSION=5.2
-  - PHP_VERSION=5.3
-  - PHP_VERSION=5.4
-  - PHP_VERSION=5.5
-  - PHP_VERSION=5.6
-  - PHP_VERSION=7.0
-  - PHP_VERSION=7.1
-  - PHP_VERSION=7.2
-  - PHP_VERSION=7.3
-  - PHP_VERSION=7.4
+dist: xenial
+
+php:
+  - 7.4
+
+before_install: true
+
+install:
+  - sudo apt-get update
+  - sudo apt-get -y install libssh2-1 libssh2-1-dev
+  - cwd=$(pwd)
+  - cd /tmp
+  - wget https://pecl.php.net/get/ssh2-1.2.tgz
+  - tar xvf ssh2-1.2.tgz
+  - cd ssh2-1.2
+  - phpize
+  - ./configure
+  - make
+  - make install
+  - echo "extension=ssh2.so" >> `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
+  - sudo useradd --create-home --base-dir /home "phpseclib"
+  - echo "phpseclib:phpseclib" | sudo chpasswd
+  - cd $cwd
 
 script:
-  - git clone -b 1.0 --single-branch https://github.com/phpseclib/phpseclib.git
-  - docker pull "phpseclib/php${PHP_VERSION}"
-  - docker run -v "`pwd`:/opt/src"
-      -w "/opt/src"
-      "phpseclib/php${PHP_VERSION}"
-      php test.php
+  - composer require phpseclib/phpseclib:3.0.x-dev
+  - composer install
+  - php test.php
