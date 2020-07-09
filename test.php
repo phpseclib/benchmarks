@@ -1,13 +1,21 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-$start = microtime(true);
+echo extension_loaded('mcrypt') ? 'mcrypt' : 'no mcrypt';
+echo "\n";
+echo extension_loaded('gmp') ? 'gmp' : 'no gmp';
+echo "\n";
+echo extension_loaded('openssl') ? 'openssl' : 'no openssl';
+echo "\n";
+echo extension_loaded('sodium') ? 'libsodium' : 'no libsodium';
+echo "\n\n\n\n";
 
 for ($i = 0; $i < 3; $i++) {
     $ssh = ssh2_connect('127.0.0.1');
     ssh2_auth_password($ssh, 'phpseclib', 'phpseclib');
     $sftp = ssh2_sftp($ssh);
 
+    $start = microtime(true);
     $fp = fopen('ssh2.sftp://' . intval($sftp) . '/home/phpseclib/1mb', 'w');
     fwrite($fp, str_repeat('a', 10 * 1024 * 1024));
     $elapsed = microtime(true) - $start;
@@ -28,9 +36,7 @@ for ($i = 0; $i < 3; $i++) {
     $sftp->login('phpseclib', 'phpseclib');
 
     $start = microtime(true);
-
     $sftp->put('1mb', str_repeat('a', 10 * 1024 * 1024));
-
     $elapsed = microtime(true) - $start;
     echo "phpseclib / upload took $elapsed seconds\r\n";
 
